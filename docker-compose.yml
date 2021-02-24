@@ -1,0 +1,15 @@
+version: "3.9"
+services:
+  web:
+    container_name: sshnginx
+    build: .
+    ports:
+      - "80:80"
+      - "32:22"
+      - "443:443"
+    volumes:
+      - /tmp/html:/var/www/html/
+    cpuset: "2"
+    
+    
+

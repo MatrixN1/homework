@@ -26,13 +26,19 @@
     pip:
       name: docker
 
-  - name: Build Container Image
-    docker_image:
-      name: sshnginx:v1.59
-      build: 
-        path: ./nginxsshdocker
-      source: build
-      
+  - name: Compose UP
+    command: docker-compose -f docker-compose.yml up -d
 
-  - name: Run Container
-    command: docker run --name sshnginx -p 80:80 -p 32:22 -d sshnginx:v1.59
+  - name: Stats
+    shell: docker stats -a --no-stream
+    register: output
+  
+  - name: Cp out to file
+    copy:
+      content: | 
+        <body>
+        {{output.stdout}}
+        </body>
+      dest: "/tmp/html/index.html"
+      mode: 0777
+    delegate_to: localhost
