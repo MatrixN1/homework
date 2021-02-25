@@ -1,13 +1,13 @@
 ---
 - name: Setup Docker Container with Nginx
-  hosts: 127.0.0.1
-  connection: local
+  hosts: udochudo.ru
+  # connection: local
   become: yes
 
   tasks:
 
   - name: Installing Docker
-    pacman: 
+    apt: 
       name: docker
       state: present
 
@@ -18,16 +18,57 @@
       enabled: yes
 
   - name: Install pip
-    pacman:
-      name: python-pip
+    apt:
+      name: python3-pip
       state: present
   
   - name: Install Docker-python
     pip:
       name: docker
+  
+  - name: Get DockerCompose
+    shell: curl -L https://github.com/docker/compose/releases/download/1.28.4/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose && chmod +x /usr/local/bin/docker-compose
+
+  - name: Build directory check
+    stat:
+      path: /tmp/dockerbuild
+    register: dockerbuild_check
+
+  - name: Remove folder
+    shell: rm -rf /tmp/dockerbuild
+    when: dockerbuild_check.stat.exists
+
+  - name: Check Exist Dockerfile
+    stat:
+      path: /tmp/dockerbuild/Dockerfile
+    register: dockerfile_check
+  - name: Check exist ConfigFile 
+    stat:
+      path: /tmp/dockerbuild/supervisord.conf
+    register: supervisorconf_check
+  - name: Check Dockercomposefile  
+    stat:
+      path: /tmp/dockerbuild/docker-compose.yml
+    register: dockercompose_check  
+
+  - name: Create DockerBuild Dir
+    shell: mkdir /tmp/dockerbuild
+    when: not dockerbuild_check.stat.exists
+
+  - name: Get Dockerfile
+    shell: curl https://raw.githubusercontent.com/MatrixN1/homework/master/Dockerfile >> /tmp/dockerbuild/Dockerfile
+    when: not dockerfile_check.stat.exists
+
+  - name: Get conf file
+    shell: curl https://raw.githubusercontent.com/MatrixN1/homework/master/supervisord.conf >> /tmp/dockerbuild/supervisord.conf
+    when: not supervisorconf_check.stat.exists
+
+  - name: Get Composefile
+    shell: curl https://raw.githubusercontent.com/MatrixN1/homework/master/docker-compose.yml >> /tmp/dockerbuild/docker-compose.yml
+    when: not dockercompose_check.stat.exists
 
   - name: Compose UP
-    command: docker-compose -f docker-compose.yml up -d
+    command: docker-compose -f /tmp/dockerbuild/docker-compose.yml up -d
 
   - name: StatsMemCPU
     shell: docker inspect sshnginx | grep '"CpusetCpus"\|"Memory"' | sed -e 's/$/\<br\>/'
