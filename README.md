@@ -1,5 +1,8 @@
 # Requirements
-Dist type: Archlinux or Ubuntu or CentOS7
+Dist type: 
+- Archlinux
+- Ubuntu
+- CentOS7
 
 ## Ports
 - ssh ports: 32
