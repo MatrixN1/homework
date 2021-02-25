@@ -1,0 +1,89 @@
+---
+- name: Setup Docker Container with Nginx
+  hosts: all
+  # connection: local
+  become: yes
+
+  tasks:
+  
+  - name: Add EPEL Repo
+    yum: 
+      name: epel-release
+      state: present
+
+  - name: Installing Soft
+    yum: 
+      name: 
+        - docker
+        - python3-pip
+      state: present
+
+  - name: Run DockerD
+    systemd:
+      name: docker
+      state: started
+      enabled: yes
+  
+  - name: Get DockerCompose
+    shell: curl -L https://github.com/docker/compose/releases/download/1.28.4/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose && chmod +x /usr/local/bin/docker-compose
+
+  - name: Build directory check
+    stat:
+      path: /tmp/dockerbuild
+    register: dockerbuild_check
+
+  - name: Remove folder
+    file:
+      state: absent
+      path: /tmp/dockerbuild
+    when: dockerbuild_check.stat.exists
+
+  - name: Check Exist Dockerfile
+    stat:
+      path: /tmp/dockerbuild/Dockerfile
+    register: dockerfile_check
+  - name: Check exist ConfigFile 
+    stat:
+      path: /tmp/dockerbuild/supervisord.conf
+    register: supervisorconf_check
+  - name: Check Dockercomposefile  
+    stat:
+      path: /tmp/dockerbuild/docker-compose.yml
+    register: dockercompose_check  
+
+  - name: Create DockerBuild Dir
+    file:
+      path: /tmp/dockerbuild
+      state: directory
+      mode: 0777
+
+  - name: Get Dockerfile
+    shell: curl https://raw.githubusercontent.com/MatrixN1/homework/master/Dockerfile >> /tmp/dockerbuild/Dockerfile
+
+  - name: Get conf file
+    shell: curl https://raw.githubusercontent.com/MatrixN1/homework/master/supervisord.conf >> /tmp/dockerbuild/supervisord.conf
+
+  - name: Get Composefile
+    shell: curl https://raw.githubusercontent.com/MatrixN1/homework/master/docker-compose.yml >> /tmp/dockerbuild/docker-compose.yml
+
+  - name: Compose UP
+    command: docker-compose -f /tmp/dockerbuild/docker-compose.yml up -d
+
+  - name: StatsMemCPU
+    shell: docker inspect sshnginx | grep '"CpusetCpus"\|"Memory"' | sed -e 's/$/\<br\>/'
+    register: memcpu
+
+  - name: DiskUsage
+    shell: sudo docker exec -t sshnginx df -h / | sed -e 's/$/\<br\>/'
+    register: storage
+
+  - name: Create html page
+    copy:
+      content: | 
+        <meta charset="utf-8">
+        <body>
+            {{memcpu.stdout}}
+            {{storage.stdout}}
+        </body>
+      dest: "/tmp/html/index.html"
+      mode: 0777
