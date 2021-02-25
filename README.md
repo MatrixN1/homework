@@ -2,7 +2,7 @@
 Dist type: 
 - Archlinux
 - Ubuntu
-- CentOS7
+- CentOS7+
 
 ## Ports
 - ssh ports: 32
