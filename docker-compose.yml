@@ -10,6 +10,8 @@ services:
     volumes:
       - /tmp/html:/var/www/html/
     cpuset: "2"
+    mem_limit: 50M
+    
     
     
 

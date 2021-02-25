@@ -29,15 +29,21 @@
   - name: Compose UP
     command: docker-compose -f docker-compose.yml up -d
 
-  - name: Stats
-    shell: docker stats -a --no-stream
-    register: output
-  
-  - name: Cp out to file
+  - name: StatsMemCPU
+    shell: docker inspect sshnginx | grep '"CpusetCpus"\|"Memory"' | sed -e 's/$/\<br\>/'
+    register: memcpu
+
+  - name: DiskUsage
+    shell: sudo docker exec -t sshnginx df -h / | sed -e 's/$/\<br\>/'
+    register: storage
+
+  - name: Create html page
     copy:
       content: | 
+        <meta charset="utf-8">
         <body>
-        {{output.stdout}}
+            {{memcpu.stdout}}
+            {{storage.stdout}}
         </body>
       dest: "/tmp/html/index.html"
       mode: 0777
