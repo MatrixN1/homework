@@ -1,21 +1,25 @@
 ---
 - name: Setup Docker Container with Nginx
-  hosts: all
-  # connection: local
+  hosts: 127.0.0.1
+  connection: local
   become: yes
-
   tasks:
   
-  - name: Add EPEL Repo
-    yum: 
-      name: epel-release
+  - name: Install Yum-Utils
+    yum:
+      name: 
+        - yum-utils
       state: present
+
+  - name: Add Docker Repo
+    shell: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
   - name: Installing Soft
     yum: 
       name: 
-        - docker
-        - python3-pip
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
       state: present
 
   - name: Run DockerD
@@ -25,7 +29,7 @@
       enabled: yes
   
   - name: Get DockerCompose
-    shell: curl -L https://github.com/docker/compose/releases/download/1.28.4/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose && chmod +x /usr/local/bin/docker-compose
+    shell: curl -L https://github.com/docker/compose/releases/download/1.28.4/docker-compose-`uname -s`-`uname -m` -o /usr/bin/docker-compose && chmod +x /usr/bin/docker-compose
 
   - name: Build directory check
     stat:

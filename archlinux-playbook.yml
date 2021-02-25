@@ -10,12 +10,11 @@
     pacman: 
       name: 
         - docker
-        - python-pip
       state: present
 
   - name: Run DockerD
     systemd:
-      name: docker
+      name: podman
       state: started
       enabled: yes
   

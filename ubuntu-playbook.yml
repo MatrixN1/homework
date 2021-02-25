@@ -10,7 +10,6 @@
     apt: 
       name: 
         - docker
-        - python3-pip
       state: present
 
   - name: Run DockerD
