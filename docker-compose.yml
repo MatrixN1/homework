@@ -2,16 +2,12 @@ version: "3.9"
 services:
   web:
     container_name: sshnginx
-    build: .
+    build: /tmp/dockerbuild
     ports:
-      - "80:80"
+      - "666:80"
       - "32:22"
-      - "443:443"
+      - "1443:443"
     volumes:
       - /tmp/html:/var/www/html/
     cpuset: "2"
     mem_limit: 50M
-    
-    
-    
-
