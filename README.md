@@ -1,5 +1,3 @@
-# homework
-
 # Requirements
 Dist type: Archlinux or Ubuntu or CentOS7
 
